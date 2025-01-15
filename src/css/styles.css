@@ -1,0 +1,14 @@
+/**
+  |============================
+  | include css partials with
+  | default @import url()
+  |============================
+*/
+/* Common styles */
+@import url('./reset.css');
+@import url('./container.css');
+@import url('./base.css');
+
+/* Sections style */
+@import url('./search-input.css');
+@import url('./gallery.css');
