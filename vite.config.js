@@ -44,5 +44,8 @@ export default defineConfig(({ command }) => {
         sort: 'mobile-first',
       }),
     ],
+    optimizeDeps: {
+      include: ['axios'], // Додаємо axios до списку оптимізованих залежностей
+    },
   };
 });
