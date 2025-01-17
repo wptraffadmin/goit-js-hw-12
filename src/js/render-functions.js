@@ -15,7 +15,7 @@ export async function fetchImages(query) {
             throw new Error('Failed to fetch images');
         }
         
-        // Повертає масив зображень
+        // Повертає масив зображень та загальну кількість
         return {
             images: response.data.hits,
             totalHits: response.data.totalHits
@@ -58,7 +58,6 @@ export function renderImages(images, totalHits) {
 
     // Додаємо кнопку для завантаження додаткових зображень
     renderLoadMoreButton(gallery, totalHits);
-
 }
 
 // Функція для прокрутки до першого елемента нової сторінки
@@ -98,6 +97,7 @@ export function renderLoadMoreButton(gallery, totalHits) {
     const existingButton = document.querySelector('.load-more-btn');
     if (existingButton) return; // Якщо кнопка вже існує, не додаємо нову
 
+    // Перевірка на досягнення кінця результатів
     if (currentPage * 15 >= totalHits) {
         gallery.insertAdjacentHTML('afterend', `
             <p class="end-message">We're sorry, but you've reached the end of search results.</p>
@@ -118,11 +118,10 @@ export function renderLoadMoreButton(gallery, totalHits) {
         // Отримуємо наступну сторінку зображень
         currentPage += 1;  // Збільшуємо поточну сторінку
         const query = 'nature'; // Це можна змінити на змінну, яка містить поточний запит
-        const newImages = await fetchImages(query);
-        renderImages(newImages, totalHits); // Рендеримо нові зображення
+        const { images, totalHits } = await fetchImages(query); // Отримуємо нові зображення та totalHits
+        renderImages(images, totalHits); // Рендеримо нові зображення
 
         // Викликаємо прокрутку
         scrollPageSmoothly();
     });
-
 }
