@@ -1,22 +1,12 @@
 body {
     font-family: Arial, sans-serif;
     background-color: #f8f8f8;
+    box-sizing: border-box;
 }
 
 .container {
     width: 80%;
     margin: 0 auto;
-}
-
-.loader {
-    display: none;
-    text-align: center;
-    font-size: 18px;
-    margin-top: 20px;
-}
-
-.loader.visible {
-    display: block;
 }
 
 .gallery {
@@ -70,8 +60,12 @@ body {
     animation: mulShdSpin 1.3s infinite linear;
     transform: translateZ(0);
     margin: 0 auto;
-    margin-top: 50px;
-    margin-bottom: 50px;
+    margin-top: 20px;
+    display: none;
+}
+
+.loader.visible {
+    display: block;
 }
 
 @keyframes mulShdSpin {
@@ -129,4 +123,25 @@ body {
             3em 0 0 -1em, 2em 2em 0 -1em, 0 3em 0 -1em,
             -2em 2em 0 0, -3em 0em 0 0, -2em -2em 0 0.2em;
     }
+}
+
+.load-more-btn {
+    width: 150px;
+    padding: 10px 20px;
+    margin: 0 auto;
+    margin-bottom: 25px;
+    border-radius: 8px;
+    border: none;
+    background-color: #4e75ff;
+    color: black;
+}
+
+.end-message {
+    margin: 0 auto;
+    background-color: red;
+    color: black;
+    margin-bottom: 25px;
+    padding: 10px 20px;
+    border-radius: 8px;
+    border: none;
 }

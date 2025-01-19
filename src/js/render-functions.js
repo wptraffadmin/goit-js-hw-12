@@ -1,38 +1,14 @@
-import axios from 'axios';
-
-let currentPage = 1;  // Початкова сторінка
-
-// Функція для отримання зображень з API
-export async function fetchImages(query) {
-    const API_KEY = '48154537-527b84123da1832c7b7680c8e';
-    const BASE_URL = 'https://pixabay.com/api/';
-    
-    const url = `${BASE_URL}?key=${API_KEY}&q=${query}&page=${currentPage}&per_page=${15}&image_type=photo&orientation=horizontal&safesearch=true`;
-
-    try {
-        const response = await axios.get(url);
-        if (response.status !== 200) {
-            throw new Error('Failed to fetch images');
-        }
-        
-        // Повертає масив зображень та загальну кількість
-        return {
-            images: response.data.hits,
-            totalHits: response.data.totalHits
-        };
-    } catch (error) {
-        console.error('Error fetching images:', error);
-        iziToast.error({
-            title: 'Error',
-            message: 'Something went wrong while fetching images!',
-        });
-    }
-}
+import iziToast from 'izitoast';
 
 // Функція для рендерингу зображень
 export function renderImages(images, totalHits) {
     const gallery = document.querySelector('.gallery');
     
+    if (!gallery) {
+        console.error('Gallery element not found');
+        return;
+    }
+
     if (images.length === 0) {
         iziToast.error({
             title: 'Error',
@@ -53,75 +29,115 @@ export function renderImages(images, totalHits) {
         </a>
     `).join('');
 
-    // Додаємо HTML розмітку галереї
     gallery.insertAdjacentHTML('beforeend', imageMarkup);
-
-    // Додаємо кнопку для завантаження додаткових зображень
-    renderLoadMoreButton(gallery, totalHits);
 }
 
-// Функція для прокрутки до першого елемента нової сторінки
+// Функція для прокрутки сторінки
 export function scrollPageSmoothly() {
-    // Отримуємо всі елементи галереї
     const galleryItems = document.querySelectorAll('.gallery-item');
-
-    // Перевірка наявності елементів
+    
     if (galleryItems.length > 0) {
-        const firstNewItem = galleryItems[galleryItems.length - 1]; // Останній елемент (останнє завантажене зображення)
-
-        // Отримуємо висоту одного елемента галереї
-        const itemHeight = firstNewItem.getBoundingClientRect().height;
-
-        // Прокручуємо сторінку на дві висоти елемента
+        const lastItem = galleryItems[galleryItems.length - 1];
+        const itemHeight = lastItem.getBoundingClientRect().height;
+        
         window.scrollBy({
-            top: itemHeight * 2,  // Прокручувати на 2 висоти елемента
-            behavior: 'smooth'    // Плавне прокручування
+            top: itemHeight * 2,
+            behavior: 'smooth'
         });
     }
 }
 
 // Функція для відображення індикатора завантаження
 export function showLoadingIndicator() {
-    const loader = document.querySelector('.loader');
+    // Знаходимо кнопку "Load More"
+    const loadMoreBtn = document.querySelector('.load-more-btn');
+    // Якщо кнопка відсутня, виходимо з функції
+    if (!loadMoreBtn) return;
+
+    // Знаходимо або створюємо індикатор завантаження
+    const loader = document.querySelector('.loader') || createLoader();
+    // Ховаємо кнопку "Load More"
+    loadMoreBtn.style.display = 'none';
+    // Робимо індикатор завантаження видимим
     loader.classList.add('visible');
 }
 
 // Функція для приховування індикатора завантаження
 export function hideLoadingIndicator() {
+    // Знаходимо індикатор завантаження
     const loader = document.querySelector('.loader');
-    loader.classList.remove('visible');
+    // Знаходимо кнопку "Load More"
+    const loadMoreBtn = document.querySelector('.load-more-btn');
+    
+    // Якщо індикатор завантаження існує, приховуємо його
+    if (loader) {
+        loader.classList.remove('visible');
+    }
+    
+    // Якщо кнопка "Load More" існує, робимо її видимою
+    if (loadMoreBtn) {
+        loadMoreBtn.style.display = 'block';
+    }
+}
+
+// Функція для створення індикатора завантаження
+function createLoader() {
+    // Створюємо новий div для індикатора
+    const loader = document.createElement('div');
+    // Додаємо клас 'loader' для стилізації
+    loader.className = 'loader';
+    // Вставляємо індикатор після галереї
+    document.querySelector('.gallery').insertAdjacentElement('afterend', loader);
+    // Повертаємо створений індикатор
+    return loader;
 }
 
 // Функція для рендерингу кнопки "Load More"
 export function renderLoadMoreButton(gallery, totalHits) {
+    // Знаходимо існуючу кнопку "Load More"
     const existingButton = document.querySelector('.load-more-btn');
-    if (existingButton) return; // Якщо кнопка вже існує, не додаємо нову
-
-    // Перевірка на досягнення кінця результатів
-    if (currentPage * 15 >= totalHits) {
-        gallery.insertAdjacentHTML('afterend', `
-            <p class="end-message">We're sorry, but you've reached the end of search results.</p>
-        `);
-        return;
+    // Знаходимо існуюче повідомлення про кінець результатів
+    const existingMessage = document.querySelector('.end-message');
+    // Знаходимо індикатор завантаження
+    const loader = document.querySelector('.loader');
+    
+    // Якщо існує кнопка "Load More", видаляємо її
+    if (existingButton) {
+        existingButton.remove();
+    }
+    // Якщо існує повідомлення про кінець результатів, видаляємо його
+    if (existingMessage) {
+        existingMessage.remove();
+    }
+    // Якщо індикатор завантаження існує, приховуємо його
+    if (loader) {
+        loader.classList.remove('visible');
     }
 
+    // Розраховуємо поточну сторінку на основі кількості елементів у галереї
+    const currentPage = Math.ceil(document.querySelectorAll('.gallery-item').length / 15);
+    
+    // Якщо результат пошуку 0 завершуємо функцію
+    if (totalHits === 0) {
+    return;
+    }
+
+    // Якщо поточна сторінка охоплює всі результати пошуку
+    if (currentPage * 15 >= totalHits) {
+        // Створюємо повідомлення про кінець результатів
+        const endMessage = `
+            <p class="end-message">We're sorry, but you've reached the end of search results.</p>
+        `;
+        // Вставляємо повідомлення після галереї
+        gallery.insertAdjacentHTML('afterend', endMessage);
+        return; // Завершуємо виконання функції
+    }
+
+    // Створюємо розмітку для кнопки "Load More"
     const buttonMarkup = `
-        <button class="load-more-btn">Load More</button>
+        <button type="button" class="load-more-btn">Load More</button>
     `;
     
+    // Додаємо кнопку після галереї
     gallery.insertAdjacentHTML('afterend', buttonMarkup);
-
-    // Додаємо обробник події для кнопки
-    const loadMoreBtn = document.querySelector('.load-more-btn');
-
-    loadMoreBtn.addEventListener('click', async () => {
-        // Отримуємо наступну сторінку зображень
-        currentPage += 1;  // Збільшуємо поточну сторінку
-        const query = 'nature'; // Це можна змінити на змінну, яка містить поточний запит
-        const { images, totalHits } = await fetchImages(query); // Отримуємо нові зображення та totalHits
-        renderImages(images, totalHits); // Рендеримо нові зображення
-
-        // Викликаємо прокрутку
-        scrollPageSmoothly();
-    });
 }
