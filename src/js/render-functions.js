@@ -123,7 +123,7 @@ export function renderLoadMoreButton(gallery, totalHits) {
     }
 
     // Якщо поточна сторінка охоплює всі результати пошуку
-    if (currentPage * 15 >= totalHits) {
+    if ((currentPage - 1) * 15 + document.querySelectorAll('.gallery-item').length >= totalHits) {
         // Створюємо повідомлення про кінець результатів
         const endMessage = `
             <p class="end-message">We're sorry, but you've reached the end of search results.</p>

@@ -105,9 +105,15 @@ class ImageGalleryController {
             this.lightbox.refresh();          // Оновлюємо лайтбокс
 
             // Відображаємо кнопку "Load More" тільки для першої сторінки
-            if (this.currentPage === 1) {
+            if (this.currentPage === 1 || this.currentPage * 15 < totalHits) {
                 renderLoadMoreButton(this.gallery, totalHits);
+            } else {
+                const existingButton = document.querySelector('.load-more-btn');
+                if (existingButton) {
+                    existingButton.remove(); // Видаляємо кнопку, якщо це остання сторінка
+                }
             }
+            
         } catch (error) {
             // Обробка помилок при завантаженні
             iziToast.error({
